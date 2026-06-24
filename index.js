@@ -41,6 +41,46 @@ app.post('/alumnos', async (req, res) => {
   }
 });
 
+app.get('/materias', async (req, res) => {
+  try {
+    const resultado = await pool.query('SELECT * FROM materia ORDER BY id');
+
+    res.status(200).json(resultado.rows);
+  } catch (error) {
+    console.error('Error al obtener materias:', error);
+    res.status(500).json({
+      error: 'Error al obtener las materias'
+    });
+  }
+});
+
+app.post('/materias', async (req, res) => {
+  try {
+    const { nombre, semestre, creditos } = req.body;
+
+    if (!nombre) {
+      return res.status(400).json({
+        error: 'El nombre es obligatorio'
+      });
+    }
+
+    const resultado = await pool.query(
+      'INSERT INTO materia (nombre, semestre, creditos) VALUES ($1, $2, $3) RETURNING *',
+      [nombre, semestre || null, creditos || null]
+    );
+
+    res.status(201).json({
+      mensaje: 'Materia insertada correctamente',
+      materia: resultado.rows[0]
+    });
+  } catch (error) {
+    console.error('Error al insertar materia:', error);
+    res.status(500).json({
+      error: 'Error al insertar la materia'
+    });
+  }
+});
+
 
 
 app.listen(3000, () => {
